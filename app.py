@@ -122,20 +122,33 @@ with st.sidebar:
         help="Anexe um ou mais arquivos no mesmo modelo AWBStatusAtPieceLevel.",
     )
     arquivo_embarque = st.file_uploader(
-        "Relatório complementar de embarque",
+        "Franchise",
         type=["xlsx", "xlsm"],
-        help="Opcional nesta versão. O arquivo será validado e exibido para mapeamento.",
+        help="Anexe o relatório Commission Report Franchise.",
     )
     arquivo_entrega = st.file_uploader(
-        "Relatório complementar de entrega",
+        "Notas Integradas (EDI)",
         type=["xlsx", "xlsm"],
-        help="Opcional nesta versão. O arquivo será validado e exibido para mapeamento.",
+        help="Anexe o relatório de Notas Integradas (EDI).",
     )
-    horas_risco = st.number_input("Faixa de SLA em risco (horas)", min_value=1, max_value=24, value=4)
+    horas_risco = st.number_input(
+        "Alertar SLA em risco quando faltarem até (horas)",
+        min_value=1,
+        max_value=24,
+        value=10,
+        help=(
+            "Exemplo: com 10 horas, toda carga pendente cujo SLA vence entre agora "
+            "e as próximas 10 horas será classificada como EM RISCO. "
+            "Se o prazo já venceu, será VENCIDO; se faltarem mais de 10 horas, ficará NO PRAZO."
+        ),
+    )
     processar = st.button("PROCESSAR RELATÓRIOS", type="primary", use_container_width=True)
 
     st.divider()
-    st.caption("O painel principal usa os arquivos AWBStatus. Os dois relatórios complementares serão cruzados após o mapeamento de seus cabeçalhos reais.")
+    st.caption(
+        "O painel principal usa o AWBStatus. Os relatórios Franchise e Notas Integradas (EDI) "
+        "ficam disponíveis para o cruzamento operacional."
+    )
 
 if processar:
     if not arquivos_status:
@@ -169,7 +182,7 @@ if processar:
                 st.session_state["resultado"] = resultado
 
                 complementares = {}
-                for chave, arquivo in {"Embarque": arquivo_embarque, "Entrega": arquivo_entrega}.items():
+                for chave, arquivo in {"Franchise": arquivo_embarque, "Notas Integradas (EDI)": arquivo_entrega}.items():
                     if arquivo is not None:
                         df_comp, situacao = ler_relatorio_complementar(arquivo, arquivo.name)
                         complementares[chave] = {"nome": arquivo.name, "situacao": situacao, "dados": df_comp}
